@@ -6,13 +6,27 @@ ENV PIP_BREAK_SYSTEM_PACKAGES=1
 
 WORKDIR /facefusion
 
-RUN apt-get update
-RUN apt-get install python3.12 -y
-RUN apt-get install python-is-python3 -y
-RUN apt-get install pip -y
-RUN apt-get install git -y
-RUN apt-get install curl -y
-RUN apt-get install ffmpeg -y
+# Install system packages
+RUN apt-get update && apt-get install -y \
+    python3.12 \
+    python-is-python3 \
+    pip \
+    git \
+    curl \
+    ffmpeg
 
-RUN git clone https://github.com/facefusion/facefusion.git --branch ${FACEFUSION_VERSION} --single-branch .
+# Upgrade pip and install jupyterlab
+RUN pip install --upgrade pip && \
+    pip install jupyterlab
+
+# Clone facefusion repository
+RUN git clone https://github.com/OanstGit/facefusion.git --branch ${FACEFUSION_VERSION} --single-branch .
+
+# Run facefusion install script
 RUN python install.py --onnxruntime cuda --skip-conda
+
+# Expose Jupyter Lab port
+EXPOSE 8888
+
+# Start both services with a script (next step will create it)
+CMD [ "/bin/bash", "/facefusion/start.sh" ]
